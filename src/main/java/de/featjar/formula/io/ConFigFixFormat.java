@@ -34,11 +34,11 @@ import java.util.stream.Collectors;
 
 /**
  * Parses feature-model formula files created by KConfigReader.
- * TODO: this is currently mostly a hack and should be parsed properly as first-order formulas
+ * 
  *
- * @author Elias Kuiter
+ * @author Rami Alfish
  */
-public class ConFigFixFormat implements IFormat<IExpression> {
+public class ConfigFixFormat implements IFormat<IExpression> {
 
     @Override
     public Result<IExpression> parse(AInputMapper inputMapper) {
@@ -51,18 +51,15 @@ public class ConFigFixFormat implements IFormat<IExpression> {
                         .getLineStream()
                         .map(String::trim)
                         .filter(l -> !l.isEmpty())
-                        .filter(l -> !l.startsWith("#"))
-                        // "convert" non-boolean constraints into boolean constraints
-                        // TODO: parse as proper first-order formulas
+                        // Transform "definedEx" syntax into a simpler form
+                        .map(l -> l.replaceAll("definedEx\\((\\w+)\\)", "$1"))
                         .map(l -> l.replace("=", "_"))
                         .map(l -> l.replace(":", "_"))
                         .map(l -> l.replace(".", "_"))
                         .map(l -> l.replace(",", "_"))
                         .map(l -> l.replace("/", "_"))
-                        .map(l -> l.replace("\\", "_"))
-                        .map(l -> l.replace(" ", "_"))
+                        .map(l -> l.replace("\\\\", "_"))
                         .map(l -> l.replace("-", "_"))
-                        .map(l -> l.replaceAll("definedEx\\((\\w+)\\)", "$1"))
                         .map(expressionParser::parse)
                         .peek(r -> problems.addAll(r.getProblems()))
                         .filter(Result::isPresent)
